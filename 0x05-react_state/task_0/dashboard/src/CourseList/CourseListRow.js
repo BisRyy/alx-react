@@ -1,62 +1,53 @@
-import React from 'react';
-import PropTypes from 'prop-types';
+import React from 'react'
+import PropTypes from 'prop-types'
 import { StyleSheet, css } from 'aphrodite';
 
-function CourseListRow({ isHeader, textFirstCell, textSecondCell }) {
-  const headerStyle = {backgroundColor: '#deb5b545'};
-  const rowStyle = {backgroundColor: '#f5f5f5ab'};
-  const selected_style = isHeader ? headerStyle : rowStyle;
-
-  return (
-    <tr style={selected_style}>
-      {isHeader ?
-        textSecondCell === null ?
-          <th colSpan="2" className={css(rowsStyles.thcenter)}>{textFirstCell}</th>
-        :
-          <>
-            <th className={css(rowsStyles.th)}>{textFirstCell}</th>
-            <th className={css(rowsStyles.th)}>{textSecondCell}</th>
-          </>
-      :
-        <>
-          <td className={css(rowsStyles.td)}>{textFirstCell}</td>
-          <td className={css(rowsStyles.td)}>{textSecondCell}</td>
-        </>
-      }
-    </tr>
-  );
-}
-
-const rowsStyles = StyleSheet.create({
-  thcenter: {
-    borderBottom: '1px solid gray',
-    margin: 0,
-    padding: 0,
-    textAlign: 'center'
+const styles = StyleSheet.create({
+  tr: {
+    borderBottom: "solid 2px rgb(189, 187, 187)",
+    textAlign: "start"
   },
   th: {
-    borderBottom: '1px solid gray',
-    margin: 0,
-    padding: 0,
-    textAlign: 'left'
+    borderBottom: "solid 2px rgb(189, 187, 187)",
+    textAlign: "start"
   },
-  td: {
-    paddingLeft: 3
+  thcol2: {
+    textAlign: "center"
   }
-});
+  
+})
+
+const CourseListRow = ({ id, isHeader, textFirstCell, textSecondCell }) => {
+  const rowStyle = {backgroundColor: '#deb5b545'}
+  const headerStyle = {backgroundColor: '#f5f5f5ab'}
+  const styleToApply = isHeader ? headerStyle : rowStyle
+  return (
+    <tr style={styleToApply}>
+        {
+        isHeader ? 
+          (textSecondCell === null) ? 
+            <th colSpan="2" style={{backgroundColor: "#deb5b545"}} className={css(styles.thcol2)}>{textFirstCell}</th> :
+            <>
+                <th className={css(styles.th)}>{textFirstCell}</th>
+                <th className={css(styles.th)}>{textSecondCell}</th>
+            </>  :
+            <>
+                <td>{textFirstCell}</td>
+                <td>{textSecondCell}</td>
+            </>
+        }
+    </tr>
+  )
+}
 
 CourseListRow.defaultProps = {
-  isHeader: false,
-  textSecondCell: null
-};
+    isHeader: false,
+    textSecondCell: null 
+}
 
 CourseListRow.propTypes = {
-  isHeader: PropTypes.bool,
-  textFirstCell: PropTypes.string,
-  textSecondCell: PropTypes.oneOfType([
-    PropTypes.string,
-    PropTypes.number
-  ])
-};
-
-export default CourseListRow;
+    isHeader: PropTypes.bool,
+    textFirstCell: PropTypes.string.isRequired,
+    textSecondCell: PropTypes.oneOfType([PropTypes.string, PropTypes.number])
+}
+export default CourseListRow

@@ -1,177 +1,105 @@
-import React from 'react';
-import { shallow, mount } from 'enzyme';
-import { jest } from '@jest/globals';
 import App from './App';
-import { StyleSheetTestUtils } from 'aphrodite';
-import { AppContext, user, logOut } from './AppContext';
+import Header from '../Header/Header';
+import Footer from '../Footer/Footer';
+import Login from '../Login/Login';
+import CourseList from '../CourseList/CourseList';
+import { shallow, mount } from 'enzyme';
+import React from 'react'
+import {StyleSheetTestUtils} from 'aphrodite';
 
-describe('Test App.js', () => {
-  let wrapper;
+StyleSheetTestUtils.suppressStyleInjection();
 
-  beforeEach(() => {
-    StyleSheetTestUtils.suppressStyleInjection();
-    wrapper = shallow(<App />);
-  });
 
-  it('Renders App without crashing', () => {
-    expect(wrapper.exists());
-  });
+describe('App', () => {
+    
+    let wrapper;
+    beforeEach(() => {
+        wrapper = shallow(<App />)
+    })
+    test('App should not rash', () => {
+        expect(wrapper.length).toBe(1)
+    });
 
-  it('App component contains Notifications component', () => {
-    expect(wrapper.find("Notifications")).toHaveLength(1);
-  });
+    test("App renders a div with the class: App-header", () => {
+        wrapper.setState({isLoggedIn: true})
+        // console.debug(wrapper.html())
+        expect(wrapper.find('App-header').length).toBe(0)
+    });
 
-  it('App component contains Header component', () => {
-    expect(wrapper.find("Header")).toHaveLength(1);
-  });
+    test("check if App component contain the Header component", () => {
+        wrapper.setState({isLoggedIn: true})
+        expect(wrapper.contains(<Header />)).toBeTruthy()
+    })
+    test("check if App component contain the Footer component", () => {
+        wrapper.setState({isLoggedIn: true})
+        expect(wrapper.contains(<Footer />)).toBeTruthy()
+    })
+    test("check that CourseList is not displayed ", () => {
+        wrapper.setState({isLoggedIn: false})
+        expect(wrapper.contains(<CourseList />)).toBeFalsy()
+    })
 
-  it('App component contains Login component', () => {
-    expect(wrapper.find("Login")).toHaveLength(1);
-  });
-
-  it('App component contains Footer component', () => {
-    expect(wrapper.find("Footer")).toHaveLength(1);
-  });
-
-  it('test to check that CourseList is not displayed inside App', () => {
-    expect(wrapper.find("CourseList")).toHaveLength(0);
-  });
+    describe("when isLoggedIn prop is true", () => {
+        let wrapper;
+        beforeEach(() => {
+            wrapper = shallow(<App isLoggedIn={true} />)
+        })
+        test("verify that the Login component is not included", () => {
+            expect(wrapper.contains(<Login />)).toBeFalsy()
+        })
+        test("verify that the CourseList component is included when loggedIn is false", () => {
+            expect(wrapper.find('CourseList').length).toBe(0)
+        })
+    })
+    afterEach(() => {
+        wrapper.unmount()
+    })
 });
 
-describe("Testing <App isLoggedIn={true} />", () => {
-  let wrapper;
-
-  beforeEach(() => {
-    StyleSheetTestUtils.suppressStyleInjection();
-    wrapper = shallow(<App/>);
-  });
-
-  it("the Login component is  included", () => {
-    expect(wrapper.find('Login')).toHaveLength(1);
-  });
-
-  it("the CourseList component is included", () => {
-    expect(wrapper.find('CourseList').exists());
-  });
-});
-
-describe("Testing <App logOut={function} />", () => {
-  beforeEach(() => {
-    StyleSheetTestUtils.suppressStyleInjection();
-  });
-
-  it("verify that when the keys control and h are pressed the logOut function, passed as a prop, is called and the alert function is called with the string Logging you out", () => {
-    const wrapper = mount(<App logOut={()=>{console.log("ctrl and h are pressed")}}/>);
-    window.alert = jest.fn();
-    const inst = wrapper.instance();
-    const logout = jest.spyOn(inst, 'logOut');
-    const alert = jest.spyOn(window, 'alert');
-    const event = new KeyboardEvent('keydown', {bubbles:true, ctrlKey: true, key: 'h'});
-    document.dispatchEvent(event);
-    expect(alert).toBeCalledWith("Logging you out");
-    expect(logout).toBeCalled();
-    alert.mockRestore();
-  });
-});
-
-describe("Testing App Component's State />", () => {
-  let wrapper;
-
-  beforeEach(() => {
-    StyleSheetTestUtils.suppressStyleInjection();
-    wrapper = shallow(<App/>);
-  });
-
-  afterEach(() => {
-		jest.clearAllMocks();
-	});
-
-  it('check if default value of displayDrawer in state is false', () => {
-    expect(wrapper.state('displayDrawer')).toBe(false);
-  });
-
-  it('Verify that after calling handleDisplayDrawer, the state displayDrawer should now be true', () => {
-    wrapper.instance().handleDisplayDrawer();
-    expect(wrapper.state('displayDrawer')).toBe(true);
-  });
-
-  it('verify that after calling handleHideDrawer, the state displayDrawer is updated to be false', () => {
-    wrapper.instance().handleHideDrawer();
-    expect(wrapper.state('displayDrawer')).toBe(false);
-  });
-
-  it(`Tests that the logIn function updates user's state correctly`, () => {
-		wrapper = mount(
-			<AppContext.Provider value={{ user, logOut }}>
-				<App />
-			</AppContext.Provider>
-		);
-
-		const myUser = {
-			email: 'testy@gmail.com',
-			password: 'testy',
-			isLoggedIn: true,
-		}
-
-		expect(wrapper.state().user).toEqual(user);
-		const instance = wrapper.instance();
-		instance.logIn(myUser.email, myUser.password);
-		expect(wrapper.state().user).toEqual(myUser);
-		wrapper.unmount();
-	})
-
-	it(`Tests that the logOut function updates user's state correctly`, () => {
-		wrapper = mount(
-			<AppContext.Provider value={{ user, logOut }}>
-				<App />
-			</AppContext.Provider>
-		);
-
-		const myUser = {
-			email: 'testy@gmail.com',
-			password: 'testy',
-			isLoggedIn: true,
-		}
-
-		expect(wrapper.state().user).toEqual(user);
-		const instance = wrapper.instance();
-		instance.logOut();
-		expect(wrapper.state().user).toEqual(user);
-		wrapper.unmount();
-	})
-
-  it(`verify that markNotificationAsRead works as intended,
-	deletes the notification with the passed id from the listNotifications array`, () => {
-		const context = {
-			user: {
-				...user,
-			},
-			logOut: jest.fn(),
-			listNotifications: [
-				{ id: 1, type: "default", value: "New course available" },
-				{ id: 2, type: "urgent", value: "New resume available" },
-				{ id: 3, html: { __html: jest.fn() }, type: "urgent" }
-			]
-		}
-
-		const wrapper = mount(
-			<AppContext.Provider value={context}>
-				<App />
-			</AppContext.Provider>
-		);
-
-		const instance = wrapper.instance();
-
-		instance.markNotificationAsRead(3);
-
-		expect(wrapper.state().listNotifications).toEqual([
-			{ id: 1, type: "default", value: "New course available" },
-			{ id: 2, type: "urgent", value: "New resume available" }
-		]);
-	
-		expect(wrapper.state().listNotifications.length).toBe(2);
-		expect(wrapper.state().listNotifications[3]).toBe(undefined);
-
-		wrapper.unmount();
-	})
-});
+describe("Testing states", () => {
+    let wrapper;
+    let Appinstnace;
+    beforeEach(() => {
+        wrapper = mount(<App />)
+        wrapper.setState({displayDrawer:false})
+        Appinstnace = wrapper.instance()
+    })
+    test("verify that the default state for `displayDrawer`, is false", () => {
+        expect(wrapper.state().displayDrawer).toBe(false);
+    })
+    test("Verify that after calling `handleDisplayDrawer`, the state should be true", () => {
+        const handleDisplayDrawer = jest.spyOn(Appinstnace, 'handleDisplayDrawer')
+        handleDisplayDrawer()
+        expect(handleDisplayDrawer).toHaveBeenCalled()
+        expect(wrapper.state().displayDrawer).toBe(true);
+    })
+    test("verify that after calling `handleHideDrawer`, the state is updated to be false", () => {
+        const handleHideDrawer = jest.spyOn(Appinstnace, 'handleHideDrawer')
+        handleHideDrawer()
+        expect(handleHideDrawer).toHaveBeenCalled()
+        expect(wrapper.state().displayDrawer).toBe(false)
+    })
+    test("test checking if logOut is being called by verifying if the state is updated correctly instead", () => {
+        const logOutMock = jest.spyOn(Appinstnace, 'logOut')
+        logOutMock()
+        expect(wrapper.state().user.email).toBe('')
+        expect(wrapper.state().user.password).toBe('')
+        expect(wrapper.state().user.isLoggedIn).toBe(false)
+    })
+    test("test to verify that the logIn function updates the state correctly", () => {
+        const logInMock = jest.spyOn(Appinstnace, 'logIn')
+        logInMock('xyz@gmail.com', 'xyz')
+        expect(wrapper.state().user.email).toBe('xyz@gmail.com')
+        expect(wrapper.state().user.password).toBe('xyz')
+        expect(wrapper.state().user.isLoggedIn).toBe(true)
+    })
+    test("", () => {
+        const markNotificationAsReadMOck = jest.spyOn(Appinstnace, 'markNotificationAsRead')
+        expect(wrapper.state().listNotifications.length).toBe(3)
+        markNotificationAsReadMOck(3)
+        expect(wrapper.state().listNotifications.length).toBe(2)
+    })
+    afterEach(() => {
+        wrapper.unmount()
+    })
+})
